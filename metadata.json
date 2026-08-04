@@ -1,0 +1,6 @@
+{
+  "name": "Auditor Interno de Calidad",
+  "description": "Una plataforma premium de auditoría de llamadas de ventas para transcribir, calificar y auditar de acuerdo con rúbricas de calidad de atención.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
