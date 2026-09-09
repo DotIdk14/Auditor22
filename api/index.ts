@@ -19,6 +19,16 @@ const upload = multer({
 let localCallsMemory: any[] = [];
 const audioBuffers = new Map<string, Buffer>();
 
+// Versión portfolio: pre-cargar 3 llamadas demo variadas (línea/ejecutiva/híbrida)
+// para que el panel siempre muestre contenido para capturas y exploración inmediata.
+[
+  ["call_seed_linea", "Llamada_Demo_Licenciatura_Administracion.mp3", 4829310],
+  ["call_seed_ejecutiva", "Llamada_Demo_MBA_Ejecutiva.mp3", 5124400],
+  ["call_seed_hibrida", "Llamada_Demo_Ingenieria_Hibrida.mp3", 4980200]
+].forEach(([id, fileName, size]) => {
+  localCallsMemory.push(generateHighFidelitySimulatedCall(fileName as string, size as number, id as string));
+});
+
 const DEMO_TOKEN = "demo-supervisor-session-token";
 const DEMO_PASSWORD = process.env.SUPERVISOR_PASSWORD || "demo1234";
 

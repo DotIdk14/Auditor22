@@ -477,6 +477,21 @@ function buildCheckedChecklistForScript(
 // Inicializar memoria de respaldo limpia (sin pre-sembrar llamada de prueba)
 console.log("Memoria de respaldo inicializada limpia para el Auditor Senior Universidad Demo.");
 
+// Versión portfolio: pre-cargar 3 llamadas demo variadas (línea/ejecutiva/híbrida)
+// para que el panel siempre muestre contenido para capturas y exploración inmediata.
+const seedDemoCalls = () => {
+  const seeds: Array<[string, string, number]> = [
+    ["call_seed_linea", "Llamada_Demo_Licenciatura_Administracion.mp3", 4829310],
+    ["call_seed_ejecutiva", "Llamada_Demo_MBA_Ejecutiva.mp3", 5124400],
+    ["call_seed_hibrida", "Llamada_Demo_Ingenieria_Hibrida.mp3", 4980200]
+  ];
+  seeds.forEach(([id, fileName, size]) => {
+    localCallsMemory.push(generateHighFidelitySimulatedCall(fileName, size, id));
+  });
+  console.log(`Llamadas demo pre-cargadas: ${localCallsMemory.length}`);
+};
+seedDemoCalls();
+
 // Versión portfolio: integración con Google Drive desactivada (sin credenciales reales).
 app.post("/api/drive-import", async (req, res) => {
   return res.status(410).json({
