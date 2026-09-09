@@ -4,10 +4,9 @@ Plataforma demo de auditoría de llamadas de ventas: transcribe, califica con un
 
 > **Versión portfolio:** todos los datos son **100% simulados** (universidad, asesores, clientes, costos y llamadas). No hay información real ni credenciales reales en este proyecto.
 
-## Acceso demo
+## Acceso
 
-- Usuario: `demo`
-- Contraseña: `demo1234`
+Acceso directo, sin login: al abrir la app entras de inmediato al panel con las llamadas de prueba.
 
 ## Por qué Google está desactivado
 

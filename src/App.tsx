@@ -1,27 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { 
   FileAudio, 
-  Settings, 
   BookOpen, 
-  BarChart3, 
   HelpCircle, 
   Activity, 
   TrendingUp, 
   Users, 
   ListMusic, 
   Trash2,
-  Lock,
   Plus,
-  Database,
-  LogOut,
-  UserCheck,
-  CheckCircle2,
-  AlertTriangle
+  Database
 } from 'lucide-react';
 import { SalesCall } from './types';
 import AudioUpload from './components/AudioUpload';
 import AuditorDashboard from './components/AuditorDashboard';
-import LoginScreen from './components/LoginScreen';
 import { deleteAudioFromDB, clearAllAudiosFromDB } from './utils/audioCache';
 
 export default function App() {
@@ -30,10 +22,7 @@ export default function App() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isManagerOpen, setIsManagerOpen] = useState<boolean>(false);
 
-  // Estado seguro de autenticación del Supervisor
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [checkingSession, setCheckingSession] = useState<boolean>(true);
-  const [sessionUser, setSessionUser] = useState<string>('');
+  // Versión portfolio: acceso directo sin login.
 
   // Protección contra inspección de código y copia no autorizada
   useEffect(() => {
@@ -62,61 +51,13 @@ export default function App() {
     };
   }, []);
 
-  // Verificación de sesión demo (versión portfolio: sin Google ni Drive)
-  useEffect(() => {
-    const token = localStorage.getItem('demo_supervisor_token');
-    const storedUser = localStorage.getItem('demo_supervisor_user');
-    if (token) {
-      fetch('/api/verify-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token })
-      })
-        .then(res => res.json())
-        .then(data => {
-          if (data.success) {
-            setIsAuthenticated(true);
-            setSessionUser(storedUser || 'Supervisor');
-          } else {
-            localStorage.removeItem('demo_supervisor_token');
-            localStorage.removeItem('demo_supervisor_user');
-          }
-        })
-        .catch(err => {
-          console.error("No se pudo verificar la sesión con el servidor:", err);
-          // Fallback seguro de seguridad para supervisor
-          localStorage.removeItem('demo_supervisor_token');
-          localStorage.removeItem('demo_supervisor_user');
-        })
-        .finally(() => {
-          setCheckingSession(false);
-        });
-    } else {
-      setCheckingSession(false);
-    }
-  }, []);
-
-  const handleLoginSuccess = (token: string, username: string) => {
-    localStorage.setItem('demo_supervisor_token', token);
-    localStorage.setItem('demo_supervisor_user', username);
-    setSessionUser(username);
-    setIsAuthenticated(true);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('demo_supervisor_token');
-    localStorage.removeItem('demo_supervisor_user');
-    setIsAuthenticated(false);
-    setSessionUser('');
-    setCalls([]);
-  };
+  // Versión portfolio: sin verificación de sesión (acceso directo).
 
   // Versión portfolio: sin sincronización con Google Drive (desactivada para no exponer credenciales reales).
   // Las auditorías viven en el servidor de demostración y en el caché local del navegador.
 
   // Cargar llamadas reales de forma dinamica al montar el componente y fusionar con el cache local del dispositivo
   useEffect(() => {
-    if (!isAuthenticated) return;
     setIsLoading(true);
     
     // 1. Cargar cache local
@@ -172,7 +113,7 @@ export default function App() {
       .finally(() => {
         setIsLoading(false);
       });
-  }, [isAuthenticated]);
+  }, []);
 
   // Guardar en cache local cuando cambien las llamadas de forma reactiva (excepto en estado de carga)
   useEffect(() => {
@@ -256,24 +197,6 @@ export default function App() {
   const salesClosedCount = calls.filter(c => c.analysis.salesOutcome === 'venta_cerrada').length;
   const convertRatePercent = Math.round((salesClosedCount / (totalCallsCount || 1)) * 100);
 
-  if (checkingSession) {
-    return (
-      <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center p-4">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-          <div className="text-center space-y-1">
-            <h3 className="text-sm font-bold text-white tracking-wide">Iniciando Servidor de Auditoría...</h3>
-            <p className="text-xs text-gray-500">Comprobando credenciales seguras de supervisor.</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return <LoginScreen onLoginSuccess={handleLoginSuccess} />;
-  }
-
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-gray-200 font-sans selection:bg-indigo-950 selection:text-indigo-200 pb-12">
       
@@ -316,20 +239,12 @@ export default function App() {
 
 
 
-          {/* Supervisor Badge Profile */}
+          {/* Portfolio: acceso directo sin login */}
           <div className="flex items-center gap-2 border-r border-[#222222] pr-3 mr-1">
             <div className="flex flex-col text-right hidden sm:block">
-              <span className="text-[9px] text-[#00c8a5] font-mono leading-none font-bold uppercase tracking-widest block">SUPERVISOR</span>
-              <span className="text-xs text-gray-300 font-semibold truncate mt-0.5 max-w-[125px] inline-block" title={sessionUser}>{sessionUser}</span>
+              <span className="text-[9px] text-[#00c8a5] font-mono leading-none font-bold uppercase tracking-widest block">MODO DEMO</span>
+              <span className="text-xs text-gray-300 font-semibold truncate mt-0.5 max-w-[125px] inline-block">Portfolio</span>
             </div>
-            <button
-              onClick={handleLogout}
-              className="p-1.5 text-gray-400 hover:text-rose-450 hover:bg-rose-500/10 hover:text-rose-400 rounded-lg transition-all cursor-pointer border border-transparent hover:border-rose-500/15"
-              id="header-logout-button"
-              title="Cerrar Sesión de Supervisor"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
           </div>
 
           <button

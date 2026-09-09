@@ -30,7 +30,7 @@ exit /b 1
 :listo
 echo.
 echo  Servidor demo en:  http://localhost:%PORT%/
-echo  Usuario: demo   Contrasena: demo1234
+echo  Acceso directo, sin login.
 echo.
 echo  NO cierres la ventana negra del servidor mientras lo uses.
 echo.
