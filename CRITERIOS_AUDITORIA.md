@@ -1,13 +1,13 @@
-# Manual de Auditoría PCE UTEL para Modelos de Lenguaje (Optimizado para DeepSeek)
+# Manual de Auditoría PCE Universidad Demo para Modelos de Lenguaje (Optimizado para DeepSeek)
 
-Este documento ha sido diseñado específicamente para estructurar e inyectar el contexto de auditorías de calidad de **UTEL Universidad** en modelos avanzados de lenguaje (como **DeepSeek-V3** o **DeepSeek-R1**). Mediante este manual, DeepSeek puede procesar llamadas telefónicas o transcripciones de audio y aplicar la **Pauta de Calidad Educativa (PCE)** de forma 100% equivalente a un auditor humano senior.
+Este documento ha sido diseñado específicamente para estructurar e inyectar el contexto de auditorías de calidad de **Universidad Demo** en modelos avanzados de lenguaje (como **DeepSeek-V3** o **DeepSeek-R1**). Mediante este manual, DeepSeek puede procesar llamadas telefónicas o transcripciones de audio y aplicar la **Pauta de Calidad Educativa (PCE)** de forma 100% equivalente a un auditor humano senior.
 
 ---
 
 ## 1. System Prompt de Rol para DeepSeek
 
 ```markdown
-Eres el agente inteligente "Auditor Senior UTEL", programado para evaluar de forma estricta y transparente la interacción verbal entre un asesor comercial y un prospecto de UTEL Universidad. Tu tarea consiste en procesar la transcripción y/o archivos de audio de llamadas, identificar los roles de los participantes y aplicar rigurosamente la Pauta de Calidad Educativa (PCE) con el fin de generar análisis psicológicos de neuroventas y puntajes comerciales exactos.
+Eres el agente inteligente "Auditor Senior Universidad Demo", programado para evaluar de forma estricta y transparente la interacción verbal entre un asesor comercial y un prospecto de Universidad Demo. Tu tarea consiste en procesar la transcripción y/o archivos de audio de llamadas, identificar los roles de los participantes y aplicar rigurosamente la Pauta de Calidad Educativa (PCE) con el fin de generar análisis psicológicos de neuroventas y puntajes comerciales exactos.
 ```
 
 ---
@@ -17,7 +17,7 @@ Eres el agente inteligente "Auditor Senior UTEL", programado para evaluar de for
 Si utilizas modelos basados en razonamiento inductivo profundo como **DeepSeek-R1**, instruye al modelo para que deconstruya la llamada en su espacio `<thought>` (pensamiento interno) antes de rellenar la rúbrica, siguiendo esta secuencia lógica:
 
 1. **Fase de Identificación de Agente y Roles**:
-   * ¿Quién introdujo el saludo institucional o el nombre de UTEL? $\rightarrow$ Definir como **Vendedor**.
+   * ¿Quién introdujo el saludo institucional o el nombre de Universidad Demo? $\rightarrow$ Definir como **Vendedor**.
    * ¿Quién responde sobre sus motivos personales, inquietudes financieras o antecedentes? $\rightarrow$ Definir como **Cliente**.
    * *Regla de Sanidad*: Verificar si el primer participante "orador 1" es el cliente expresando timidez o brevedad habitual (ej: *"¿Sí? Bueno, buenas tardes"*). No tipificarlo como vendedor por hablar de primero.
 2. **Fase de Segmentación del Diálogo**:
@@ -38,7 +38,7 @@ A continuación, se describen los criterios analíticos que el motor de IA debe 
 #### 1. Interés en opción en línea o abordaje del formato virtual (`c1_linea`)
 * **Puntuación**: 0.20 pts.
 * **Criterio de Aprobación (`true`)**: El asesor menciona que la modalidad es virtual, flexible, a distancia o a través de la red, o bien el cliente expresa que busca estudiar sin asistir físicamente.
-* **Falso Positivo Común a Evitar**: Si el asesor solo dice *"bienvenido a UTEL"* pero nunca califica o describe el concepto de cursar materias a distancia o en línea, califica como `false`.
+* **Falso Positivo Común a Evitar**: Si el asesor solo dice *"bienvenido a Universidad Demo"* pero nunca califica o describe el concepto de cursar materias a distancia o en línea, califica como `false`.
 * **Disparadores clave**: *"modalidad en línea"*, *"virtual"*, *"estudio a distancia"*, *"mediante plataforma digital"*.
 
 #### 2. Determinación del programa de interés específico (`c1_programa`)
@@ -69,7 +69,7 @@ A continuación, se describen los criterios analíticos que el motor de IA debe 
 
 ### CATEGORÍA C2: GENERALIDADES (Ponderación total: 1.00 Punto)
 
-#### 6. Exposición de la numeralia institucional de UTEL (`c2_num`)
+#### 6. Exposición de la numeralia institucional de Universidad Demo (`c2_num`)
 * **Puntuación**: 0.34 pts.
 * **Criterio de Aprobación (`true`)**: Mención explícita del respaldo y tamaño de la institución utilizando cifras verificables de la marca (ej: **más de 12 años**, **presencia en más de 30 países**, más de **100 mil egresados** o alumnos).
 * **Falso Positivo Común a Evitar**: Decir simplemente *"somos una universidad muy grande"* no es equivalente a numeralia formal. Se requieren datos estadísticos de credibilidad.
@@ -83,7 +83,7 @@ A continuación, se describen los criterios analíticos que el motor de IA debe 
 
 #### 8. Vinculación del modelo educativo con las necesidades del prospecto (`c2_esp`)
 * **Puntuación**: 0.33 pts.
-* **Criterio de Aprobación (`true`)**: Conectar de forma proactiva la flexibilidad del modelo educativo de UTEL con los retos de tiempo, distancia u ocupación expresados por el cliente en la sección c1.
+* **Criterio de Aprobación (`true`)**: Conectar de forma proactiva la flexibilidad del modelo educativo de Universidad Demo con los retos de tiempo, distancia u ocupación expresados por el cliente en la sección c1.
 * **Falso Positivo Común a Evitar**: Mantener un discurso de ventas memorizado sin retomar lo que el cliente le acaba de compartir (ej: si el prospecto dijo que trabaja de noche y el asesor le sugiere estudiar solo de noche, demostrando empatía y escucha activa).
 * **Disparadores clave**: *"Como me comentabas que tu horario de trabajo es..."*, *"Justo para ti que viajas constantemente..."*, *"Esto te dará la libertad de estudiar sin descuidar a tu familia..."*.
 
@@ -133,12 +133,12 @@ A continuación, se describen los criterios analíticos que el motor de IA debe 
 
 #### 15. Solicitud u orientación del envío de documentos de admisión (`c4_doc`)
 * **Puntuación**: 0.25 pts.
-* **Criterio de Aprobación (`true`)**: El asesor detalla cuáles son los documentos requeridos (ej. Acta de nacimiento original, identificación oficial, CURP, certificado escolar anterior) y cómo enviarlos a las plataformas digitales de UTEL.
+* **Criterio de Aprobación (`true`)**: El asesor detalla cuáles son los documentos requeridos (ej. Acta de nacimiento original, identificación oficial, CURP, certificado escolar anterior) y cómo enviarlos a las plataformas digitales de Universidad Demo.
 * **Disparadores clave**: *"Necesitaremos recolectar tus documentos digitales"*, *"Enviar tu CURP e INE por foto o correo electrónico para conformar tu expediente escolar"*.
 
 #### 16. Establecimiento de compromisos firmes de pago de inscripción (`c4_pag`)
 * **Puntuación**: 0.25 pts.
-* **Criterio de Aprobación (`true`)**: El asesor fija una fecha y hora límite para que el prospecto realice el depósito de inscripción o use los portales de pago en línea de UTEL Universidad.
+* **Criterio de Aprobación (`true`)**: El asesor fija una fecha y hora límite para que el prospecto realice el depósito de inscripción o use los portales de pago en línea de Universidad Demo.
 * **Falso Positivo Común a Evitar**: Finalizar la conversación aceptando una promesa vaga como *"pago cuando tenga dinero"* o *"luego les aviso cuando haga la transacción"*.
 * **Disparadores clave**: *"¿Podemos agendar el compromiso de pago para este sábado en la mañana?"*, *"¿A qué hora podría corroborar con mi sistema la acreditación de tu pago de matrícula?"*.
 
@@ -162,9 +162,9 @@ A continuación, se describen los criterios analíticos que el motor de IA debe 
 * **Criterio de Aprobación (`true`)**: El tono, desarrollo y acuerdos del prospecto permiten al asesor asignarle de inmediato un estatus comercial calificado claro (ej: *Llamada interesada*, *Compromiso establecido*, *Enviando documentos*, *Inscrito en proceso*).
 * **Disparadores clave**: Consistencia comercial a lo largo de toda la interacción conversacional documentada.
 
-#### 20. Protocolo de etiqueta e identidad de marcas y plataformas oficiales UTEL (`c5_pla`)
+#### 20. Protocolo de etiqueta e identidad de marcas y plataformas oficiales Universidad Demo (`c5_pla`)
 * **Puntuación**: 1.20 pts.
-* **Criterio de Aprobación (`true`)**: El asesor se conduce en todo momento con profesionalismo, utiliza los saludos, de forma respetuosa del interlocutor, haciendo alusión al entorno oficial y portal académico de la facultad de UTEL.
+* **Criterio de Aprobación (`true`)**: El asesor se conduce en todo momento con profesionalismo, utiliza los saludos, de forma respetuosa del interlocutor, haciendo alusión al entorno oficial y portal académico de la facultad de Universidad Demo.
 * **Disparadores clave**: No presentar malas prácticas, no omitir los saludos obligatorios institucionales, no cometer desvíos éticos comerciales.
 
 #### 21. Registro de interacciones en tiempo real en expediente corporativo (`c5_reg`)
@@ -245,7 +245,7 @@ Para integrarse de manera fluida con el backend, DeepSeek **debe** responder exc
   "transcription": [
     {
       "speaker": "Vendedor",
-      "text": "Hola, muy buenas tardes. Te habla el asesor comercial de UTEL.",
+      "text": "Hola, muy buenas tardes. Te habla el asesor comercial de Universidad Demo.",
       "sentiment": "positive",
       "start": 0.0,
       "end": 3.5

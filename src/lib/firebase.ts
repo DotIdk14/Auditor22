@@ -1,57 +1,30 @@
+// Versión portfolio: autenticación con Google desactivada para no exponer credenciales reales.
+// Este módulo conserva las exportaciones que usa la app, pero googleSignIn siempre
+// rechaza con un mensaje explicativo. El acceso es solo demo con contraseña (ver LoginScreen).
 import { initializeApp } from 'firebase/app';
-import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, User } from 'firebase/auth';
+import { getAuth, onAuthStateChanged, User } from 'firebase/auth';
 import firebaseConfig from '../../firebase-applet-config.json';
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 
-const provider = new GoogleAuthProvider();
-// Scope para acceso de creación y lectura de archivos propios y lectura general para importación
-provider.addScope('https://www.googleapis.com/auth/drive.file');
-provider.addScope('https://www.googleapis.com/auth/drive.readonly');
-provider.addScope('https://www.googleapis.com/auth/drive.metadata.readonly');
+export const PORTFOLIO_GOOGLE_DISABLED_MESSAGE =
+  'El inicio de sesión con Google está desactivado en la versión portfolio para no exponer credenciales reales. Usa el acceso demo con contraseña.';
 
-
-let isSigningIn = false;
-let cachedAccessToken: string | null = typeof window !== 'undefined' ? localStorage.getItem('utel_google_drive_token') : null;
+let cachedAccessToken: string | null = null;
 
 export const initAuth = (
   onAuthSuccess?: (user: User, token: string) => void,
   onAuthFailure?: () => void
 ) => {
-  return onAuthStateChanged(auth, async (user: User | null) => {
-    if (user) {
-      if (cachedAccessToken) {
-        if (onAuthSuccess) onAuthSuccess(user, cachedAccessToken);
-      } else if (!isSigningIn) {
-        cachedAccessToken = null;
-        if (onAuthFailure) onAuthFailure();
-      }
-    } else {
-      cachedAccessToken = null;
-      if (onAuthFailure) onAuthFailure();
-    }
-  });
+  // Sin sesión de Google en modo portfolio: notificar fallo de inmediato.
+  cachedAccessToken = null;
+  if (onAuthFailure) onAuthFailure();
+  return () => {};
 };
 
 export const googleSignIn = async (): Promise<{ user: User; accessToken: string } | null> => {
-  try {
-    isSigningIn = true;
-    const result = await signInWithPopup(auth, provider);
-    const credential = GoogleAuthProvider.credentialFromResult(result);
-    if (!credential?.accessToken) {
-      throw new Error('No se pudo obtener el token de acceso de Google.');
-    }
-
-    cachedAccessToken = credential.accessToken;
-    localStorage.setItem('utel_google_drive_token', cachedAccessToken);
-    return { user: result.user, accessToken: cachedAccessToken };
-  } catch (error: any) {
-    console.error('Error al iniciar sesión con Google:', error);
-    throw error;
-  } finally {
-    isSigningIn = false;
-  }
+  throw new Error(PORTFOLIO_GOOGLE_DISABLED_MESSAGE);
 };
 
 export const getAccessToken = (): string | null => {
@@ -59,7 +32,12 @@ export const getAccessToken = (): string | null => {
 };
 
 export const logoutGoogle = async () => {
-  await auth.signOut();
   cachedAccessToken = null;
-  localStorage.removeItem('utel_google_drive_token');
+  try {
+    localStorage.removeItem('demo_google_drive_token');
+    // Limpiar restos de versiones anteriores
+    localStorage.removeItem('utel_google_drive_token');
+  } catch {
+    // Ignorar errores de almacenamiento
+  }
 };

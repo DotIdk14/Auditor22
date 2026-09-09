@@ -69,7 +69,7 @@ export default function AuditorDashboard({ activeCall }: AuditorDashboardProps) 
     };
   }, [activeCall.id, activeCall.metadata.url]);
   
-  // Registrar el ID del item de la lista UTEL PCE que está expandido
+  // Registrar el ID del item de la lista PCE que está expandido
   const [expandedChecklistId, setExpandedChecklistId] = useState<string | null>("C1");
   const [showFullTranscript, setShowFullTranscript] = useState(false);
 
@@ -169,7 +169,7 @@ export default function AuditorDashboard({ activeCall }: AuditorDashboardProps) 
     }
   };
 
-  // Extraer evaluación UTEL si existe, si no generar heurística segura al vuelo
+  // Extraer evaluación PCE si existe, si no generar heurística segura al vuelo
   const utelData = activeCall.analysis.utel;
 
   // Determinar color de tema para los modelos educativos
@@ -217,7 +217,7 @@ export default function AuditorDashboard({ activeCall }: AuditorDashboardProps) 
           <div className="bg-[#111111] text-white rounded-2xl p-6 shadow-md border border-[#222222] flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <div className="flex flex-col">
-                <span className="text-[10px] text-gray-500 font-mono tracking-widest uppercase">AUDITORÍA DE CANAL ACTIVO UTEL</span>
+                <span className="text-[10px] text-gray-500 font-mono tracking-widest uppercase">AUDITORÍA DE CANAL ACTIVO · VERSIÓN DEMO</span>
                 <h3 className="text-sm font-semibold text-white truncate max-w-xs">{activeCall.metadata.fileName}</h3>
               </div>
               <div className="flex items-center gap-2">
@@ -334,11 +334,11 @@ export default function AuditorDashboard({ activeCall }: AuditorDashboardProps) 
             </div>
           </div>
 
-          {/* Rúbrica de Auditoría PCE UTEL */}
+          {/* Rúbrica de Auditoría PCE (demo) */}
           <div className="bg-[#111111] rounded-2xl border border-[#222222] p-6 shadow-md flex flex-col gap-5" id="pce-rubric-card-top">
             <div className="flex items-center justify-between border-b border-[#222222]/80 pb-3">
               <span className="text-xs uppercase tracking-wider text-gray-300 font-bold font-mono">
-                RÚBRICA DE AUDITORÍA PCE UTEL
+                RÚBRICA DE AUDITORÍA PCE (DEMO)
               </span>
               {utelData ? (
                 <span className="inline-flex items-center px-4 py-1.5 rounded-lg text-xs font-black tracking-widest bg-emerald-950/20 text-[#00c8a5] border border-emerald-500/30 uppercase">
@@ -384,7 +384,7 @@ export default function AuditorDashboard({ activeCall }: AuditorDashboardProps) 
               <div className="flex flex-col">
                 <span className="font-bold text-white text-base">Calificación del PCE</span>
                 <p className="text-xs text-gray-400 leading-normal">
-                  Puntaje acumulado sobre las categorías clave verificadas en la llamada. La estructura y ponderación se apega estrictamente a la matriz oficial UTEL.
+                  Puntaje acumulado sobre las categorías clave verificadas en la llamada. Rúbrica de demostración con datos 100% simulados.
                 </p>
               </div>
             </div>

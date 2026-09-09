@@ -1,6 +1,6 @@
 // IndexedDB helper for caching uploaded audio files locally on the device
 
-const DB_NAME = 'utel_audios_cache_db';
+const DB_NAME = 'demo_audios_cache_db';
 const STORE_NAME = 'audios';
 const DB_VERSION = 1;
 

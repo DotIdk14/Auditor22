@@ -9,7 +9,7 @@ import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 dotenv.config();
 
 const app = express();
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
 // Middleware para procesar cuerpos JSON
 app.use(express.json());
@@ -34,7 +34,7 @@ const getGeminiClient = () => {
   return new GoogleGenAI({ apiKey });
 };
 
-// Función heurística de evaluación UTEL (Garantiza datos completos y realistas si Gemini está ausente)
+// Función heurística de evaluación Universidad Demo (Garantiza datos completos y realistas si Gemini está ausente)
 function evaluateUtelHeuristic(transcription: any[], fileName: string): any {
   const fullText = transcription.map(t => t.text).join(" ").toLowerCase();
   
@@ -87,7 +87,7 @@ function evaluateUtelHeuristic(transcription: any[], fileName: string): any {
   const subC5 = [
     { id: "c5_int", name: "Hablar directamente con el interesado", weight: 1.20, checked: transcription.length > 2 },
     { id: "c5_tip", name: "Tipificación positiva", weight: 1.20, checked: true },
-    { id: "c5_pla", name: "Interacción dentro de plataformas UTEL", weight: 1.20, checked: true },
+    { id: "c5_pla", name: "Interacción dentro de plataformas Universidad Demo", weight: 1.20, checked: true },
     { id: "c5_reg", name: "Registro de interacción", weight: 1.20, checked: true },
     { id: "c5_seg", name: "Seguimiento de acuerdos", weight: 1.20, checked: fullText.includes("mañana") || fullText.includes("contacto") }
   ];
@@ -112,7 +112,7 @@ function evaluateUtelHeuristic(transcription: any[], fileName: string): any {
       { id: "C2", title: "GENERALIDADES", weight: 1.00, score: scoreC2, status: scoreC2 >= 0.8 ? 'passed' : 'failed', feedback: "Institucionalidad y modelo educativo.", subitems: subC2 },
       { id: "C3", title: "OFERTA ACADÉMICA", weight: 1.00, score: scoreC3, status: scoreC3 >= 0.8 ? 'passed' : 'failed', feedback: "Información de costos y beneficios.", subitems: subC3 },
       { id: "C4", title: "ACUERDOS Y CIERRE", weight: 1.00, score: scoreC4, status: scoreC4 >= 0.75 ? 'passed' : 'failed', feedback: "Cierre de compromisos.", subitems: subC4 },
-      { id: "C5", title: "GESTIÓN Y REGISTRO", weight: 6.00, score: scoreC5, status: scoreC5 >= 4.0 ? 'passed' : 'failed', feedback: "Cumplimiento de procesos UTEL.", subitems: subC5 }
+      { id: "C5", title: "GESTIÓN Y REGISTRO", weight: 6.00, score: scoreC5, status: scoreC5 >= 4.0 ? 'passed' : 'failed', feedback: "Cumplimiento de procesos Universidad Demo.", subitems: subC5 }
     ],
     emotionalAnalysis: {
       primaryEmotion: totalScore >= 7.0 ? "Interesado y optimista" : "Indiferente y dudoso",
@@ -144,9 +144,9 @@ async function generateAndSplitTextDiarization(consolidatedText: string): Promis
   try {
     console.log("[GUARDRAILS_GEMINI] Ejecutando reparación de transcripción simplista con Gemini 3.5 Flash para separar oradores...");
     const prompt = `
-    Eres un transcriptor experto. Toma el siguiente texto continuo que representa una llamada telefónica real de ventas de UTEL Universidad donde se consolidaron los discursos de ambos oradores sin separarse ni asignarse los turnos.
+    Eres un transcriptor experto. Toma el siguiente texto continuo que representa una llamada telefónica real de ventas de Universidad Demo donde se consolidaron los discursos de ambos oradores sin separarse ni asignarse los turnos.
     
-    Analiza semánticamente el flujo del diálogo y sepáralo exactamente en turnos de habla alternativos e individuales para 'Vendedor' (asesor UTEL que explica, ofrece beneficios, pide documentos, pregunta) y 'Cliente' (prospecto que responde, hace preguntas cortas de precio, comparte su ocupación).
+    Analiza semánticamente el flujo del diálogo y sepáralo exactamente en turnos de habla alternativos e individuales para 'Vendedor' (asesor Universidad Demo que explica, ofrece beneficios, pide documentos, pregunta) y 'Cliente' (prospecto que responde, hace preguntas cortas de precio, comparte su ocupación).
     
     Texto continuo a separar:
     "${consolidatedText}"
@@ -260,7 +260,7 @@ async function applyTranscriptionGuardrails(transcription: any[]): Promise<Trans
 
   // Si el Cliente habla notablemente más con palabras del Vendedor, los roles están invertidos. Swapear los roles de todos.
   if (sellerScoresForCliente > sellerScoresForVendedor + 1 && sellerScoresForCliente > 2) {
-    console.warn("[SPEAKER_GUARDRAIL] Se detectó REVERSIÓN flagrante de oradores (Asesor de UTEL catalogado como Cliente). Realizando swap de roles global para toda la transcripción...");
+    console.warn("[SPEAKER_GUARDRAIL] Se detectó REVERSIÓN flagrante de oradores (Asesor de Universidad Demo catalogado como Cliente). Realizando swap de roles global para toda la transcripción...");
     cleaned = cleaned.map(item => ({
       ...item,
       speaker: item.speaker === "Vendedor" ? "Cliente" : "Vendedor"
@@ -270,7 +270,7 @@ async function applyTranscriptionGuardrails(transcription: any[]): Promise<Trans
   return cleaned;
 }
 
-// Función principal para generar análisis con Gemini (Auditoría PCE UTEL)
+// Función principal para generar análisis con Gemini (Auditoría PCE Universidad Demo)
 async function generateGeminiAnalysis(audioBuffer: Buffer, format: string): Promise<any> {
   const ai = getGeminiClient();
   const fallbackId = `fallback_${Date.now()}`;
@@ -286,16 +286,16 @@ async function generateGeminiAnalysis(audioBuffer: Buffer, format: string): Prom
 
     const promptText = `
     # ROL
-    Eres un Auditor Senior de Calidad Educativa de la UTEL Universidad y un experto en Neuroventas.
+    Eres un Auditor Senior de Calidad Educativa de la Universidad Demo y un experto en Neuroventas.
     Escucha atentamente el audio de la llamada de ventas proporcionada y realiza lo siguiente con absoluta precisión técnica:
     
     1. Transcribe toda la llamada de principio a fin, dividiéndola en fragmentos extremadamente cortos y cronológicos (máximo 10-15 palabras por elemento).
         ¡IMPORTANTE!: NUNCA liques o consolides discursos largos de los oradores en un solo bloque. Si el Vendedor o Cliente exponen discursos continuos prolongados, DEBES fraccionarlos secuencialmente en múltiples objetos con el mismo valor en 'speaker', asignando tiempos 'start' y 'end' correctos.
-    2. Identifica con total exactitud de 100% quién es el "Vendedor" (el representante comercial de UTEL que ofrece programas, explica costos, becas, revalidaciones) y quién es el "Cliente" (el prospecto que hace preguntas de inscripción, plantea dudas de dinero, habla de su tiempo libre o estudios previos). 
-       ¡ATENCIÓN CRÍTICA!: NUNCA confundas a los oradores. Si el prospecto es el primero en hablar (por ejemplo, diciendo "hola", "¿bueno?", "buenas tardes"), identifícalo estrictamente como "Cliente". El representante de UTEL que inicia o prosigue con el saludo y pitch de venta es el "Vendedor".
-    3. Evalúa detalladamente los 22 subítems de la Rúbrica oficial de Calidad Educativa PCE de UTEL Universidad.
+    2. Identifica con total exactitud de 100% quién es el "Vendedor" (el representante comercial de Universidad Demo que ofrece programas, explica costos, becas, revalidaciones) y quién es el "Cliente" (el prospecto que hace preguntas de inscripción, plantea dudas de dinero, habla de su tiempo libre o estudios previos). 
+       ¡ATENCIÓN CRÍTICA!: NUNCA confundas a los oradores. Si el prospecto es el primero en hablar (por ejemplo, diciendo "hola", "¿bueno?", "buenas tardes"), identifícalo estrictamente como "Cliente". El representante de Universidad Demo que inicia o prosigue con el saludo y pitch de venta es el "Vendedor".
+    3. Evalúa detalladamente los 22 subítems de la Rúbrica oficial de Calidad Educativa PCE de Universidad Demo.
 
-    # REGLAS DE AUDITORÍA PCE UTEL (22 PARÁMETROS):
+    # REGLAS DE AUDITORÍA PCE Universidad Demo (22 PARÁMETROS):
     Debes marcar cada uno de los siguientes 22 puntos como VERDADERO (true) o FALSO (false) según se identifiquen razonablemente o correspondan con la conversación en el audio de la llamada:
 
     C1. CONOCE A TU CLIENTE
@@ -306,8 +306,8 @@ async function generateGeminiAnalysis(audioBuffer: Buffer, format: string): Prom
     - "c1_equiv": ¿El asesor pregunta sobre equivalencias, revalidación o estudios inconclusos? (true/false)
 
     C2. GENERALIDADES
-    - "c2_num": ¿Se expone la numeralia oficial UTEL (más de 12 años, presencia en 3 países, miles de egresados)? (true/false)
-    - "c2_mod": ¿Se detalla y explica el modelo educativo flexible de UTEL? (true/false)
+    - "c2_num": ¿Se expone la numeralia oficial Universidad Demo (más de 12 años, presencia en 3 países, miles de egresados)? (true/false)
+    - "c2_mod": ¿Se detalla y explica el modelo educativo flexible de Universidad Demo? (true/false)
     - "c2_esp": ¿Se vincula el modelo educativo específicamente con las necesidades expresadas por el prospecto? (true/false)
 
     C3. OFERTA ACADÉMICA
@@ -326,7 +326,7 @@ async function generateGeminiAnalysis(audioBuffer: Buffer, format: string): Prom
     C5. GESTIÓN Y REGISTRO
     - "c5_int": ¿Se habla directamente con el interesado de la inscripción? (true/false)
     - "c5_tip": ¿La interacción parece encaminada a una tipificación positiva en el CRM? (true/false)
-    - "c5_pla": ¿Se interactuó conforme a los valores de las plataformas UTEL? (true/false)
+    - "c5_pla": ¿Se interactuó conforme a los valores de las plataformas Universidad Demo? (true/false)
     - "c5_reg": ¿El asesor parece estar registrando la interacción en tiempo real? (true/false)
     - "c5_seg": ¿Se definieron pasos de seguimiento claros (seguimiento de acuerdos)? (true/false)
 
@@ -380,7 +380,7 @@ async function generateGeminiAnalysis(audioBuffer: Buffer, format: string): Prom
     const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
     const analysis = JSON.parse(cleanJson);
 
-    // Complementar con la lógica UTEL de puntajes
+    // Complementar con la lógica Universidad Demo de puntajes
     const evaluatedSubitems = analysis.evaluatedSubitems || {};
     const feedbackMap = analysis.feedbackMap || {};
     
@@ -451,7 +451,7 @@ function buildCheckedChecklistForScript(
   const subC5 = [
     { id: "c5_int", name: "Hablar directamente con el interesado", weight: 1.20, checked: !!evaluatedSubitems["c5_int"] },
     { id: "c5_tip", name: "Tipificación positiva", weight: 1.20, checked: !!evaluatedSubitems["c5_tip"] },
-    { id: "c5_pla", name: "Interacción dentro de plataformas UTEL", weight: 1.20, checked: !!evaluatedSubitems["c5_pla"] },
+    { id: "c5_pla", name: "Interacción dentro de plataformas Universidad Demo", weight: 1.20, checked: !!evaluatedSubitems["c5_pla"] },
     { id: "c5_reg", name: "Registro de interacción", weight: 1.20, checked: !!evaluatedSubitems["c5_reg"] },
     { id: "c5_seg", name: "Seguimiento de acuerdos", weight: 1.20, checked: !!evaluatedSubitems["c5_seg"] }
   ];
@@ -475,7 +475,7 @@ function generateHighFidelitySimulatedCall(originalName: string, fileSize: numbe
   
   let program = "Licenciatura en Administración de Empresas";
   let modality: 'LÍNEA' | 'EJECUTIVA' | 'HÍBRIDA' = 'LÍNEA';
-  let clientName = "Sofía López";
+  let clientName = "Mariana Soto";
   let age = 24;
   let primaryEmotion = "Interesado";
   let initialDoubt = "sobre cursar en línea y la validez oficial del título";
@@ -486,7 +486,7 @@ function generateHighFidelitySimulatedCall(originalName: string, fileSize: numbe
   if (nameLower.includes("ejecut") || nameLower.includes("exec") || nameLower.includes("negoci") || nameLower.includes("mba")) {
     program = "Maestría en Dirección de Negocios (MBA)";
     modality = "EJECUTIVA";
-    clientName = "Alejandro Ruiz";
+    clientName = "Jorge Medina";
     age = 32;
     primaryEmotion = "Receptivo y profesional";
     initialDoubt = "sobre la modalidad ejecutiva semipresencial y el networking directivo";
@@ -495,7 +495,7 @@ function generateHighFidelitySimulatedCall(originalName: string, fileSize: numbe
   } else if (nameLower.includes("hibrid") || nameLower.includes("presenc") || nameLower.includes("ing") || nameLower.includes("sistem") || nameLower.includes("tech")) {
     program = "Ingeniería en Sistemas Computacionales";
     modality = "HÍBRIDA";
-    clientName = "Mateo Silva";
+    clientName = "Lucía Ramos";
     age = 21;
     primaryEmotion = "Entusiasmado y asertivo";
     initialDoubt = "sobre combinar clases virtuales con laboratorios tecnológicos presenciales";
@@ -503,13 +503,13 @@ function generateHighFidelitySimulatedCall(originalName: string, fileSize: numbe
     salesOutcome = "venta_cerrada";
   }
 
-  // Conversación de alta fidelidad alineada meticulosamente a la Rúbrica de Auditoría UTEL (22 Parámetros)
+  // Conversación de alta fidelidad alineada meticulosamente a la Rúbrica de Auditoría Universidad Demo (22 Parámetros)
   const transcription = [
     {
       speaker: "Vendedor" as const,
       start: 1.2,
       end: 6.8,
-      text: `Hola, muy buenos días. Te habla Carlos Alberto del departamento de Admisiones de UTEL Universidad. ¿Con quién tengo el gusto hoy?`,
+      text: `Hola, muy buenos días. Te habla Andrés del departamento de Admisiones de Universidad Demo. ¿Con quién tengo el gusto hoy?`,
       sentiment: "positive" as const,
       confidence: 0.99
     },
@@ -517,7 +517,7 @@ function generateHighFidelitySimulatedCall(originalName: string, fileSize: numbe
       speaker: "Cliente" as const,
       start: 7.5,
       end: 12.0,
-      text: `Hola, buenos días Carlos. Habla ${clientName}. Vi un anuncio en internet y quería pedir información para la carrera de ${program}.`,
+      text: `Hola, buenos días Andrés. Habla ${clientName}. Vi un anuncio en internet y quería pedir información para la carrera de ${program}.`,
       sentiment: "neutral" as const,
       confidence: 0.98
     },
@@ -525,7 +525,7 @@ function generateHighFidelitySimulatedCall(originalName: string, fileSize: numbe
       speaker: "Vendedor" as const,
       start: 12.8,
       end: 25.4,
-      text: `¡Un excelente gusto saludarte, ${clientName}! Bienvenido a UTEL. Para poder darte el mejor acompañamiento comercial adaptado a tus necesidades de estudio, coméntame por favor, ¿qué edad tienes, en qué ciudad resides y a qué te dedicas actualmente?`,
+      text: `¡Un excelente gusto saludarte, ${clientName}! Bienvenido a Universidad Demo. Para poder darte el mejor acompañamiento comercial adaptado a tus necesidades de estudio, coméntame por favor, ¿qué edad tienes, en qué ciudad resides y a qué te dedicas actualmente?`,
       sentiment: "positive" as const,
       confidence: 0.99
     },
@@ -541,7 +541,7 @@ function generateHighFidelitySimulatedCall(originalName: string, fileSize: numbe
       speaker: "Vendedor" as const,
       start: 37.2,
       end: 46.8,
-      text: `Perfecto, estás en el lugar idóneo. Te comento sobre UTEL: somos la universidad digital número uno, con más de 12 años de trayectoria intachable, presencia activa de alumnos en más de 3 países y más de 100,500 egresados titulados con éxito en todo el continente.`,
+      text: `Perfecto, estás en el lugar idóneo. Te comento sobre Universidad Demo: somos la universidad digital número uno, con más de 12 años de trayectoria intachable, presencia activa de alumnos en más de 3 países y más de 100,500 egresados titulados con éxito en todo el continente.`,
       sentiment: "positive" as const,
       confidence: 0.98
     },
@@ -557,7 +557,7 @@ function generateHighFidelitySimulatedCall(originalName: string, fileSize: numbe
       speaker: "Cliente" as const,
       start: 60.5,
       end: 67.2,
-      text: `La verdad sí, suena ideal. Oye Carlos, ¿y manejan equivalencia o revalidación? Cursé tres semestres de otra licenciatura inconclusa previamente.`,
+      text: `La verdad sí, suena ideal. Oye Andrés, ¿y manejan equivalencia o revalidación? Cursé tres semestres de otra licenciatura inconclusa previamente.`,
       sentiment: "neutral" as const,
       confidence: 0.97
     },
@@ -565,7 +565,7 @@ function generateHighFidelitySimulatedCall(originalName: string, fileSize: numbe
       speaker: "Vendedor" as const,
       start: 68.0,
       end: 78.5,
-      text: `¡Qué gran noticia! Sí, en UTEL contamos con un proceso sumamente ágil y simplificado de equivalencias para revalidar tus materias anteriores. Evaluamos tu historial oficial y nosotros nos encargamos del trámite administrativo ante el ministerio educativo.`,
+      text: `¡Qué gran noticia! Sí, en Universidad Demo contamos con un proceso sumamente ágil y simplificado de equivalencias para revalidar tus materias anteriores. Evaluamos tu historial oficial y nosotros nos encargamos del trámite administrativo ante el ministerio educativo.`,
       sentiment: "positive" as const,
       confidence: 0.99
     },
@@ -653,7 +653,7 @@ function generateHighFidelitySimulatedCall(originalName: string, fileSize: numbe
       speaker: "Vendedor" as const,
       start: 175.2,
       end: 184.0,
-      text: `Muchísimas gracias. Procedo al registro. Te llegará el correo formal de bienvenida en unos instantes y agendamos una llamada de seguimiento formal para mañana a las 11:00 AM para verificar que tu matrícula esté validada ante admisiones. ¡Un gran honor darte la bienvenida a UTEL Universidad, ${clientName}!`,
+      text: `Muchísimas gracias. Procedo al registro. Te llegará el correo formal de bienvenida en unos instantes y agendamos una llamada de seguimiento formal para mañana a las 11:00 AM para verificar que tu matrícula esté validada ante admisiones. ¡Un gran honor darte la bienvenida a Universidad Demo, ${clientName}!`,
       sentiment: "positive" as const,
       confidence: 0.99
     },
@@ -661,7 +661,7 @@ function generateHighFidelitySimulatedCall(originalName: string, fileSize: numbe
       speaker: "Cliente" as const,
       start: 184.6,
       end: 188.0,
-      text: `Al contrario, gracias a ti Carlos por tu asesoramiento. Hablamos mañana a las once. Lindo día.`,
+      text: `Al contrario, gracias a ti Andrés por tu asesoramiento. Hablamos mañana a las once. Lindo día.`,
       sentiment: "positive" as const,
       confidence: 0.99
     }
@@ -703,7 +703,7 @@ function generateHighFidelitySimulatedCall(originalName: string, fileSize: numbe
   const subC5 = [
     { id: "c5_int", name: "Hablar directamente con el interesado", weight: 1.20, checked: true },
     { id: "c5_tip", name: "Tipificación positiva", weight: 1.20, checked: true },
-    { id: "c5_pla", name: "Interacción dentro de plataformas UTEL", weight: 1.20, checked: true },
+    { id: "c5_pla", name: "Interacción dentro de plataformas Universidad Demo", weight: 1.20, checked: true },
     { id: "c5_reg", name: "Registro de interacción", weight: 1.20, checked: true },
     { id: "c5_seg", name: "Seguimiento de acuerdos", weight: 1.20, checked: true }
   ];
@@ -726,7 +726,7 @@ function generateHighFidelitySimulatedCall(originalName: string, fileSize: numbe
       { id: "C2", title: "GENERALIDADES", weight: 1.00, score: scoreC2, status: 'passed' as const, feedback: "Institucionalidad y modelo educativo.", subitems: subC2 },
       { id: "C3", title: "OFERTA ACADÉMICA", weight: 1.00, score: scoreC3, status: 'passed' as const, feedback: "Información de costos y beneficios.", subitems: subC3 },
       { id: "C4", title: "ACUERDOS Y CIERRE", weight: 1.00, score: scoreC4, status: 'passed' as const, feedback: "Cierre de compromisos.", subitems: subC4 },
-      { id: "C5", title: "GESTIÓN Y REGISTRO", weight: 6.00, score: scoreC5, status: 'passed' as const, feedback: "Cumplimiento de procesos UTEL.", subitems: subC5 }
+      { id: "C5", title: "GESTIÓN Y REGISTRO", weight: 6.00, score: scoreC5, status: 'passed' as const, feedback: "Cumplimiento de procesos Universidad Demo.", subitems: subC5 }
     ]
   };
 
@@ -738,7 +738,7 @@ function generateHighFidelitySimulatedCall(originalName: string, fileSize: numbe
       size: fileSize,
       duration: 188,
       uploadedAt: new Date().toISOString(),
-      uploadedBy: "auditor_sales_prod",
+      uploadedBy: "demo",
       status: "completed" as const
     },
     score: {
@@ -750,9 +750,9 @@ function generateHighFidelitySimulatedCall(originalName: string, fileSize: numbe
       empathy: 100
     },
     analysis: {
-      summary: `La conversación de ${clientName} demuestra el perfecto acoplamiento al guion comercial de UTEL de acuerdo con la Rúbrica de Auditoría PCE. El asesor Carlos Alberto se posicionó de manera sumamente consultiva y empática. Logró identificar que el principal factor limitante del prospecto es el tiempo de estudio diario por su empleo continuo, rebatiéndolo magistralmente con el modelo asíncrono y flexible de 15 horas semanales. Cerró un excelente acuerdo de pago de inscripción de $850 pesos para el día de mañana y la recepción de referidos valiosos.`,
+      summary: `La conversación de ${clientName} demuestra el perfecto acoplamiento al guion comercial de Universidad Demo de acuerdo con la Rúbrica de Auditoría PCE. El asesor Andrés se posicionó de manera sumamente consultiva y empática. Logró identificar que el principal factor limitante del prospecto es el tiempo de estudio diario por su empleo continuo, rebatiéndolo magistralmente con el modelo asíncrono y flexible de 15 horas semanales. Cerró un excelente acuerdo de pago de inscripción de $850 pesos para el día de mañana y la recepción de referidos valiosos.`,
       strengths: [
-        "Presentación institucional intachable (12 años de trayectoria de UTEL, presencia en 3 países).",
+        "Presentación institucional intachable (12 años de trayectoria de Universidad Demo, presencia en 3 países).",
         "Empatía de neuroventas para encajar la flexibilidad del plan virtual con sus horarios de oficina.",
         "Manejo preciso de costos desglosando la cuota regular, el descuento por beca congelada y cuotas adicionales.",
         "Mecanismos efectivos para obtención y registro de referidos de forma asertiva."
@@ -780,7 +780,7 @@ function generateHighFidelitySimulatedCall(originalName: string, fileSize: numbe
           "Confirmó poseer listos en formato digital en su celular todos los requisitos solicitados.",
           "Ofreció proactivamente el contacto telefónico de un referido cercano interesado en estudiar."
         ],
-        aptitudeReason: `Excelente prospecto para estudiar en línea en UTEL. Tiene ingresos estables y la beca congelada actuó como el acelerador determinante de compra. Se recomienda un seguimiento oportuno mañana a las 11:00 AM para cerrar la matrícula.`
+        aptitudeReason: `Excelente prospecto para estudiar en línea en Universidad Demo. Tiene ingresos estables y la beca congelada actuó como el acelerador determinante de compra. Se recomienda un seguimiento oportuno mañana a las 11:00 AM para cerrar la matrícula.`
       }
     },
     transcription: transcription
@@ -790,156 +790,59 @@ function generateHighFidelitySimulatedCall(originalName: string, fileSize: numbe
 }
 
 // Inicializar memoria de respaldo limpia (sin pre-sembrar llamada de prueba)
-console.log("Memoria de respaldo inicializada limpia para el Auditor Senior UTEL.");
+console.log("Memoria de respaldo inicializada limpia para el Auditor Senior Universidad Demo.");
 
-// API: Importar y auditar llamada desde Google Drive
+// Versión portfolio: integración con Google Drive desactivada (sin credenciales reales).
 app.post("/api/drive-import", async (req, res) => {
-  const { fileId, fileName, accessToken, engine, ollamaUrl, ollamaModel } = req.body;
-
-  if (!fileId || !accessToken) {
-    return res.status(400).json({ error: "File ID y Access Token son requeridos." });
-  }
-
-  try {
-    console.log(`[DRIVE] Descargando archivo ${fileName} (${fileId}) de Google Drive...`);
-    
-    // 1. Descargar el archivo directamente de la API de Google Drive (Soportando Unidades Compartidas / Cuentas Institucionales)
-    const driveResponse = await axios({
-      method: 'get',
-      url: `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&supportsAllDrives=true`,
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-      responseType: 'arraybuffer'
-    });
-
-    const audioBuffer = Buffer.from(driveResponse.data);
-    const audioSize = audioBuffer.length;
-    
-    console.log(`[DRIVE] Archivo descargado exitosamente. Tamaño: ${audioSize} bytes.`);
-
-    // 2. Procesar con el motor de IA seleccionado (Gemini o Ollama)
-    let analysis;
-    const uniqueId = `drive_${fileId.slice(0, 8)}_${Date.now()}`;
-
-    // Determinar mimeType básico
-    const ext = fileName.split('.').pop()?.toLowerCase() || 'mp3';
-
-    if (engine === 'ollama') {
-      console.log(`[DRIVE] Procesando con Ollama Local (${ollamaModel})...`);
-      // Simular transcripción para Ollama (ya que Ollama es LLM, no STT usualmente, pero aquí el flujo lo permite)
-      analysis = await generateGeminiAnalysis(audioBuffer, ext === 'wav' ? 'wav' : 'mp3'); 
-    } else {
-      console.log(`[DRIVE] Procesando con Google AI Gemini...`);
-      analysis = await generateGeminiAnalysis(audioBuffer, ext === 'wav' ? 'wav' : 'mp3');
-    }
-
-    const newCall: any = {
-      id: uniqueId,
-      metadata: {
-        fileName: fileName,
-        duration: analysis.duration || 0,
-        uploadedAt: new Date().toISOString(),
-        uploadedBy: "Supervisor (Drive Import)",
-        status: "completed"
-      },
-      analysis: analysis,
-      score: {
-        global: (analysis.utel?.totalScore || 0) * 10,
-        criteria: analysis.utel?.checklist?.map((item: any) => ({
-          name: item.title,
-          score: (item.score / item.weight) * 100,
-          weight: item.weight
-        })) || []
-      },
-      transcription: analysis.transcription || []
-    };
-
-    audioBuffers.set(uniqueId, audioBuffer);
-    localCallsMemory.unshift(newCall);
-    res.json(newCall);
-
-  } catch (err: any) {
-    console.error("[DRIVE_ERROR] Fallo al procesar archivo de Drive:", err.message);
-    res.status(500).json({ 
-      error: `Error al importar de Drive: ${err.response?.data?.error || err.message}` 
-    });
-  }
+  return res.status(410).json({
+    error: "La importación desde Google Drive está desactivada en la versión portfolio para no exponer credenciales reales. Usa la carga local de audio o las llamadas de prueba."
+  });
 });
 
-// Función auxiliar para recuperar los correos electrónicos autorizados
-const getAllowedEmails = (): Set<string> => {
-  const emails = new Set<string>();
-  // Correos administradores por defecto
-  emails.add("ianjarquin1403@gmail.com");
-  emails.add("ian.jarquin@utel.edu.mx");
-  emails.add("admin@utel.edu.mx");
+// Versión portfolio: no se usan correos reales.
+// El login con Google está desactivado (ver /api/login), por lo que no hay lista de correos autorizados.
 
-  const envEmails = process.env.ALLOWED_EMAILS;
-  if (envEmails) {
-    envEmails.split(",").forEach(e => {
-      const trimmed = e.trim().toLowerCase();
-      if (trimmed) {
-        emails.add(trimmed);
-      }
+// API: Supervisor Login (Versión portfolio: solo acceso demo con contraseña.
+// El login con Google está desactivado para no exponer credenciales reales).
+app.post("/api/login", (req, res) => {
+  const { username, password } = req.body;
+
+  // Autenticación con Google desactivada en la versión portfolio
+  if (req.body.email) {
+    console.warn(`[AUTH_DISABLED] Intento de login con Google rechazado (modo portfolio).`);
+    return res.status(403).json({
+      success: false,
+      error: "El inicio de sesión con Google está desactivado en la versión portfolio para no exponer credenciales reales. Usa el acceso demo con contraseña."
     });
   }
-  return emails;
-};
 
-// API: Supervisor Login (Soporta Google OAuth y Contraseña tradicional)
-app.post("/api/login", (req, res) => {
-  const { email, displayName, username, password } = req.body;
-
-  // Opción 1: Autenticación con Google
-  if (email) {
-    const allowed = getAllowedEmails();
-    const searchEmail = email.trim().toLowerCase();
-
-    // Permitir si está en la lista blanca O si es un correo institucional de UTEL
-    if (allowed.has(searchEmail) || searchEmail.endsWith("@utel.edu.mx")) {
-      console.log(`[AUTH_SUCCESS] Acceso concedido para: ${searchEmail}`);
-      return res.json({
-        success: true,
-        token: "utel-supervisor-session-token",
-        username: displayName || email.split("@")[0]
-      });
-    } else {
-      console.warn(`[AUTH_DENIED] Acceso denegado para: ${email}.`);
-      return res.status(403).json({
-        success: false,
-        error: `Acceso denegado: El correo ${email} no tiene permisos de auditoría. Contacta al administrador para habilitar tu acceso.`
-      });
-    }
-  }
-
-  // Opción 2: Autenticación con Contraseña Tradicional
+  // Acceso demo con contraseña
   if (password) {
-    const correctPassword = process.env.SUPERVISOR_PASSWORD || "supervisoresutel";
+    const correctPassword = process.env.SUPERVISOR_PASSWORD || "demo1234";
     if (password === correctPassword) {
       return res.json({
         success: true,
-        token: "utel-supervisor-session-token",
+        token: "demo-supervisor-session-token",
         username: username || "Supervisor"
       });
     } else {
       return res.status(401).json({ 
         success: false, 
-        error: "Contraseña de acceso incorrecta." 
+        error: "Contraseña de acceso incorrecta. En la versión portfolio usa la contraseña demo." 
       });
     }
   }
 
   return res.status(400).json({ 
     success: false, 
-    error: "Se requiere un método de autenticación válido." 
+    error: "Se requiere la contraseña del acceso demo." 
   });
 });
 
 // API: Verificar sesión del Supervisor
 app.post("/api/verify-session", (req, res) => {
   const { token } = req.body;
-  if (token === "utel-supervisor-session-token") {
+  if (token === "demo-supervisor-session-token") {
     return res.json({ success: true });
   }
   return res.status(401).json({ error: "Sesión inválida o expirada" });
@@ -949,7 +852,7 @@ app.post("/api/verify-session", (req, res) => {
 app.post("/api/cargar-demo", (req, res) => {
   const uniqueId = `call_demo_${Date.now()}`;
   const demoCall = generateHighFidelitySimulatedCall(
-    `Llamada_Comercial_Demo_UTEL_${Math.floor(Math.random() * 90 + 10)}.mp3`,
+    `Llamada_Comercial_Demo_${Math.floor(Math.random() * 90 + 10)}.mp3`,
     4829310,
     uniqueId
   );
@@ -1031,7 +934,7 @@ app.post("/api/upload", upload.single("audio"), async (req, res) => {
             size: file.size,
             duration: analysis.duration || 180,
             uploadedAt: new Date().toISOString(),
-            uploadedBy: "auditor_sales_prod",
+            uploadedBy: "demo",
             status: "completed"
           },
           score: {
@@ -1112,7 +1015,7 @@ app.post("/api/upload", upload.single("audio"), async (req, res) => {
         size: file.size,
         duration: 0,
         uploadedAt: new Date().toISOString(),
-        uploadedBy: "auditor_sales_prod",
+        uploadedBy: "demo",
         status: "processing"
       },
       score: { global: 0, greeting: 0, needDiscovery: 0, objectionHandling: 0, closingSkills: 0, empathy: 0 },
@@ -1165,7 +1068,7 @@ app.post("/api/upload", upload.single("audio"), async (req, res) => {
       if (uniqueSpeakers.length <= 1) {
         rawSpeakerSeller = uniqueSpeakers[0] || "A";
       } else {
-        // Inicializar puntajes para cada orador para determinar cuál es el Asesor/Vendedor de UTEL
+        // Inicializar puntajes para cada orador para determinar cuál es el Asesor/Vendedor de Universidad Demo
         const speakerScores: Record<string, number> = {};
         uniqueSpeakers.forEach(sp => {
           speakerScores[sp as string] = 0;
@@ -1286,7 +1189,7 @@ app.post("/api/upload", upload.single("audio"), async (req, res) => {
     const ollamaUrl = req.body.ollamaUrl || "http://localhost:11434";
     const ollamaModelName = req.body.ollamaModel || "llama3";
 
-    // 5. INTELIGENCIA COGNITIVA Y ANÁLISIS EMOCIONAL (MATRIZ PCE UTEL OFICIAL DE LOS PDF)
+    // 5. INTELIGENCIA COGNITIVA Y ANÁLISIS EMOCIONAL (MATRIZ PCE Universidad Demo OFICIAL DE LOS PDF)
     const buildCheckedChecklist = (
       evaluatedSubitems: Record<string, boolean>,
       feedbackMap: Record<string, string>,
@@ -1333,7 +1236,7 @@ app.post("/api/upload", upload.single("audio"), async (req, res) => {
       const subC5 = [
         { id: "c5_int", name: "Hablar directamente con el interesado", weight: 1.20, checked: !evaluatedSubitems.hasOwnProperty("c5_int") ? true : !!evaluatedSubitems["c5_int"] },
         { id: "c5_tip", name: "Tipificación positiva", weight: 1.20, checked: evaluatedSubitems["c5_tip"] !== false },
-        { id: "c5_pla", name: "Interacción dentro de plataformas UTEL", weight: 1.20, checked: evaluatedSubitems["c5_pla"] !== false },
+        { id: "c5_pla", name: "Interacción dentro de plataformas Universidad Demo", weight: 1.20, checked: evaluatedSubitems["c5_pla"] !== false },
         { id: "c5_reg", name: "Registro de interacción", weight: 1.20, checked: evaluatedSubitems["c5_reg"] !== false },
         { id: "c5_seg", name: "Seguimiento de acuerdos", weight: 1.20, checked: !!evaluatedSubitems["c5_seg"] }
       ];
@@ -1349,7 +1252,7 @@ app.post("/api/upload", upload.single("audio"), async (req, res) => {
         modalidadDetectada: modalidad,
         evaluacion_detallada: {
           "CONOCE A TU CLIENTE": feedbackMap["CONOCE A TU CLIENTE"] || `${scoreC1.toFixed(2)} pts - Se indagarón los datos y necesidades de estudio.`,
-          "GENERALIDADES": feedbackMap["GENERALIDADES"] || `${scoreC2.toFixed(2)} pts - Se explicó el respaldo y beneficios de UTEL.`,
+          "GENERALIDADES": feedbackMap["GENERALIDADES"] || `${scoreC2.toFixed(2)} pts - Se explicó el respaldo y beneficios de Universidad Demo.`,
           "OFERTA ACADÉMICA": feedbackMap["OFERTA ACADÉMICA"] || `${scoreC3.toFixed(2)} pts - Presentación detallada de colegiatura, becas e inscripción.`,
           "ACUERDOS Y CIERRE": feedbackMap["ACUERDOS Y CIERRE"] || `${scoreC4.toFixed(2)} pts - Establecimiento de compromisos y envío de documentos.`,
           "GESTIÓN Y REGISTRO": feedbackMap["GESTIÓN Y REGISTRO"] || `${scoreC5.toFixed(2)} pts - Cumplimiento del protocolo y tipificación del CRM.`
@@ -1359,7 +1262,7 @@ app.post("/api/upload", upload.single("audio"), async (req, res) => {
           { id: "C2", title: "GENERALIDADES", weight: 1.00, score: scoreC2, status: scoreC2 >= 0.8 ? 'passed' : 'failed', feedback: feedbackMap["GENERALIDADES"] || "Institucionalidad y modelo educativo.", subitems: subC2 },
           { id: "C3", title: "OFERTA ACADÉMICA", weight: 1.00, score: scoreC3, status: scoreC3 >= 0.8 ? 'passed' : 'failed', feedback: feedbackMap["OFERTA ACADÉMICA"] || "Información de costos y beneficios.", subitems: subC3 },
           { id: "C4", title: "ACUERDOS Y CIERRE", weight: 1.00, score: scoreC4, status: scoreC4 >= 0.75 ? 'passed' : 'failed', feedback: feedbackMap["ACUERDOS Y CIERRE"] || "Cierre de compromisos.", subitems: subC4 },
-          { id: "C5", title: "GESTIÓN Y REGISTRO", weight: 6.00, score: scoreC5, status: scoreC5 >= 4.0 ? 'passed' : 'failed', feedback: feedbackMap["GESTIÓN Y REGISTRO"] || "Cumplimiento de procesos UTEL.", subitems: subC5 }
+          { id: "C5", title: "GESTIÓN Y REGISTRO", weight: 6.00, score: scoreC5, status: scoreC5 >= 4.0 ? 'passed' : 'failed', feedback: feedbackMap["GESTIÓN Y REGISTRO"] || "Cumplimiento de procesos Universidad Demo.", subitems: subC5 }
         ]
       };
     };
@@ -1373,12 +1276,12 @@ app.post("/api/upload", upload.single("audio"), async (req, res) => {
     let nextSteps = ["Seguimiento CRM"];
     let emotionalAnalysis = localUtelResult.emotionalAnalysis;
 
-    // Prompt cognitivo robusto y blindado, basándose exactamente en los PDF de UTEL
+    // Prompt cognitivo robusto y blindado, basándose exactamente en los PDF de Universidad Demo
     const promptText = `
     # ROL
-    Eres un Auditor Senior de Calidad Educativa y un experto en Neuroventas. Analiza la transcripción de la llamada telefónica y califica el desempeño del vendedor de acuerdo con la Rúbrica de Auditoría PCE de UTEL Universidad. Además, evalúa detenidamente el estado emocional del cliente.
+    Eres un Auditor Senior de Calidad Educativa y un experto en Neuroventas. Analiza la transcripción de la llamada telefónica y califica el desempeño del vendedor de acuerdo con la Rúbrica de Auditoría PCE de Universidad Demo. Además, evalúa detenidamente el estado emocional del cliente.
 
-    # REGLAS DE AUDITORÍA PCE UTEL (21 PARÁMETROS):
+    # REGLAS DE AUDITORÍA PCE Universidad Demo (21 PARÁMETROS):
     Debes marcar cada uno de los siguientes 21 puntos como VERDADERO (true) o FALSO (false) según se identifiquen racionalmente o correspondan con la conversación en la transcripción de la llamada. no asumas ni alteres esta estructura:
 
     C1. CONOCE A TU CLIENTE
@@ -1389,8 +1292,8 @@ app.post("/api/upload", upload.single("audio"), async (req, res) => {
     - "c1_equiv": ¿El asesor pregunta sobre equivalencias, revalidación o estudios inconclusos? (true/false)
 
     C2. GENERALIDADES
-    - "c2_num": ¿Se expone la numeralia oficial UTEL (más de 12 años, presencia en 3 países, miles de egresados)? (true/false)
-    - "c2_mod": ¿Se detalla y explica el modelo educativo flexible de UTEL? (true/false)
+    - "c2_num": ¿Se expone la numeralia oficial Universidad Demo (más de 12 años, presencia en 3 países, miles de egresados)? (true/false)
+    - "c2_mod": ¿Se detalla y explica el modelo educativo flexible de Universidad Demo? (true/false)
     - "c2_esp": ¿Se vincula el modelo educativo específicamente con las necesidades expresadas por el prospecto? (true/false)
 
     C3. OFERTA ACADÉMICA
@@ -1409,7 +1312,7 @@ app.post("/api/upload", upload.single("audio"), async (req, res) => {
     C5. GESTIÓN Y REGISTRO
     - "c5_int": ¿El asesor habla directa y fluidamente con el prospecto interesado a lo largo de la llamada? (true/false)
     - "c5_tip": ¿Se infiere uso de una tipificación correcta de seguimiento al prospecto? (true/false)
-    - "c5_pla": ¿El asesor utiliza las plataformas y guiones UTEL correctos en su trato? (true/false)
+    - "c5_pla": ¿El asesor utiliza las plataformas y guiones Universidad Demo correctos en su trato? (true/false)
     - "c5_reg": ¿Se infiere el registro íntegro de la llamada en plataforma CRM? (true/false)
     - "c5_seg": ¿Se acuerda una fecha/hora específica para el seguimiento formal del trámite escolar? (true/false)
 
@@ -1568,7 +1471,7 @@ app.post("/api/upload", upload.single("audio"), async (req, res) => {
           size: file.size,
           duration: Math.round(resultData?.audio_duration || 180),
           uploadedAt: new Date().toISOString(),
-          uploadedBy: "auditor_sales_prod",
+          uploadedBy: "demo",
           status: "completed"
         },
         score: {
@@ -1604,7 +1507,7 @@ app.post("/api/upload", upload.single("audio"), async (req, res) => {
             size: file.size,
             duration: analysis.duration || 180,
             uploadedAt: new Date().toISOString(),
-            uploadedBy: "auditor_sales_prod",
+            uploadedBy: "demo",
             status: "completed"
           },
           score: {
@@ -1651,125 +1554,19 @@ app.delete("/api/llamadas/:id", (req, res) => {
   return res.json({ success: true });
 });
 
-// API: Guardar auditoría en Google Drive
+// Versión portfolio: guardado en Google Drive desactivado (sin credenciales reales).
 app.post("/api/drive-save", async (req, res) => {
-  const { callData, accessToken } = req.body;
-
-  if (!callData || !accessToken) {
-    return res.status(400).json({ error: "Datos de llamada y token son requeridos." });
-  }
-
-  try {
-    const folderName = "Auditorías PCE UTEL";
-    
-    // 1. Buscar o crear carpeta (Soportando Unidades Compartidas / Cuentas Institucionales)
-    let folderId = "";
-    const searchFolder = await axios.get(`https://www.googleapis.com/drive/v3/files?q=name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false&supportsAllDrives=true&includeItemsFromAllDrives=true`, {
-      headers: { Authorization: `Bearer ${accessToken}` }
-    });
-
-    if (searchFolder.data.files.length > 0) {
-      folderId = searchFolder.data.files[0].id;
-    } else {
-      const createFolder = await axios.post("https://www.googleapis.com/drive/v3/files?supportsAllDrives=true", {
-        name: folderName,
-        mimeType: "application/vnd.google-apps.folder"
-      }, {
-        headers: { Authorization: `Bearer ${accessToken}` }
-      });
-      folderId = createFolder.data.id;
-    }
-
-    // 2. Subir el JSON
-    const fileName = `Audit_${callData.metadata.fileName.replace(/\.[^/.]+$/, "")}_${Date.now()}.json`;
-    const metadata = {
-      name: fileName,
-      parents: [folderId],
-      mimeType: "application/json"
-    };
-
-    const formData = new FormData();
-    formData.append("metadata", new Blob([JSON.stringify(metadata)], { type: "application/json" }));
-    formData.append("file", new Blob([JSON.stringify(callData)], { type: "application/json" }));
-
-    // Nota: axios con FormData puede ser complejo en Node para Google Drive. 
-    // Usaremos un enfoque de 2 pasos o multipart manual.
-    // Para simplicidad, usaremos el endpoint de upload simple con metadata.
-    
-    const uploadUrl = "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&supportsAllDrives=true";
-    
-    const boundary = "auditor_pce_boundary";
-    const body = `--${boundary}\r\n` +
-      `Content-Type: application/json; charset=UTF-8\r\n\r\n` +
-      `${JSON.stringify(metadata)}\r\n` +
-      `--${boundary}\r\n` +
-      `Content-Type: application/json\r\n\r\n` +
-      `${JSON.stringify(callData)}\r\n` +
-      `--${boundary}--`;
-
-    await axios.post(uploadUrl, body, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": `multipart/related; boundary=${boundary}`
-      }
-    });
-
-    return res.json({ success: true, message: "Auditoría guardada en Drive." });
-  } catch (error: any) {
-    console.error("Error al guardar en Drive:", error.response?.data || error.message);
-    return res.status(500).json({ error: `Fallo al guardar en Google Drive: ${error.response?.data?.error?.message || error.message}` });
-  }
+  return res.status(410).json({
+    error: "El guardado en Google Drive está desactivado en la versión portfolio para no exponer credenciales reales. Las auditorías se conservan en el caché local del navegador."
+  });
 });
 
-// API: Listar historial desde Google Drive
+// Versión portfolio: historial de Google Drive desactivado (sin credenciales reales).
 app.get("/api/drive-history", async (req, res) => {
-  const { accessToken } = req.query;
-
-  if (!accessToken) {
-    return res.status(400).json({ error: "Token es requerido." });
-  }
-
-  try {
-    const folderName = "Auditorías PCE UTEL";
-    
-    // 1. Buscar la carpeta (Soportando Unidades Compartidas / Cuentas Institucionales)
-    const searchFolder = await axios.get(`https://www.googleapis.com/drive/v3/files?q=name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false&supportsAllDrives=true&includeItemsFromAllDrives=true`, {
-      headers: { Authorization: `Bearer ${accessToken as string}` }
-    });
-
-    if (searchFolder.data.files.length === 0) {
-      return res.json({ calls: [] });
-    }
-
-    const folderId = searchFolder.data.files[0].id;
-
-    // 2. Listar archivos JSON en esa carpeta (Soportando Unidades Compartidas / Cuentas Institucionales)
-    const listFiles = await axios.get(`https://www.googleapis.com/drive/v3/files?q='${folderId}' in parents and mimeType='application/json' and trashed=false&fields=files(id, name)&supportsAllDrives=true&includeItemsFromAllDrives=true`, {
-      headers: { Authorization: `Bearer ${accessToken as string}` }
-    });
-
-    const files = listFiles.data.files;
-    const calls = [];
-
-    // 3. Descargar el contenido de cada archivo (Límite 10 para no saturar, soportando Unidades Compartidas)
-    for (const file of files.slice(0, 10)) {
-      try {
-        const fileContent = await axios.get(`https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&supportsAllDrives=true`, {
-          headers: { Authorization: `Bearer ${accessToken as string}` }
-        });
-        if (fileContent.data && fileContent.data.id) {
-          calls.push(fileContent.data);
-        }
-      } catch (e) {
-        console.warn(`No se pudo leer el archivo ${file.name} de Drive.`);
-      }
-    }
-
-    return res.json({ calls });
-  } catch (error: any) {
-    console.error("Error al listar Drive:", error.response?.data || error.message);
-    return res.status(500).json({ error: `Fallo al recuperar historial de Google Drive: ${error.response?.data?.error?.message || error.message}` });
-  }
+  return res.status(410).json({
+    calls: [],
+    error: "El historial de Google Drive está desactivado en la versión portfolio para no exponer credenciales reales."
+  });
 });
 
 // Middleware de integración de Vite

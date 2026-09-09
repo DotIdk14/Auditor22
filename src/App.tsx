@@ -12,13 +12,9 @@ import {
   Trash2,
   Lock,
   Plus,
-  Folder,
   Database,
   LogOut,
   UserCheck,
-  Cloud,
-  CloudOff,
-  RefreshCw,
   CheckCircle2,
   AlertTriangle
 } from 'lucide-react';
@@ -27,15 +23,12 @@ import AudioUpload from './components/AudioUpload';
 import AuditorDashboard from './components/AuditorDashboard';
 import LoginScreen from './components/LoginScreen';
 import { deleteAudioFromDB, clearAllAudiosFromDB } from './utils/audioCache';
-import { initAuth } from './lib/firebase';
 
 export default function App() {
   const [calls, setCalls] = useState<SalesCall[]>([]);
   const [selectedCallId, setSelectedCallId] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isManagerOpen, setIsManagerOpen] = useState<boolean>(false);
-  const [isSyncingDrive, setIsSyncingDrive] = useState<boolean>(false);
-  const [driveStatus, setDriveStatus] = useState<'connected' | 'disconnected' | 'error'>('disconnected');
 
   // Estado seguro de autenticación del Supervisor
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -69,13 +62,10 @@ export default function App() {
     };
   }, []);
 
-  // Inicialización de autenticación para servicios (como Drive) y verificación de sesión
+  // Verificación de sesión demo (versión portfolio: sin Google ni Drive)
   useEffect(() => {
-    // Restaurar sesión de Google Drive si existe
-    initAuth();
-
-    const token = localStorage.getItem('utel_supervisor_token');
-    const storedUser = localStorage.getItem('utel_supervisor_user');
+    const token = localStorage.getItem('demo_supervisor_token');
+    const storedUser = localStorage.getItem('demo_supervisor_user');
     if (token) {
       fetch('/api/verify-session', {
         method: 'POST',
@@ -88,15 +78,15 @@ export default function App() {
             setIsAuthenticated(true);
             setSessionUser(storedUser || 'Supervisor');
           } else {
-            localStorage.removeItem('utel_supervisor_token');
-            localStorage.removeItem('utel_supervisor_user');
+            localStorage.removeItem('demo_supervisor_token');
+            localStorage.removeItem('demo_supervisor_user');
           }
         })
         .catch(err => {
           console.error("No se pudo verificar la sesión con el servidor:", err);
           // Fallback seguro de seguridad para supervisor
-          localStorage.removeItem('utel_supervisor_token');
-          localStorage.removeItem('utel_supervisor_user');
+          localStorage.removeItem('demo_supervisor_token');
+          localStorage.removeItem('demo_supervisor_user');
         })
         .finally(() => {
           setCheckingSession(false);
@@ -107,77 +97,22 @@ export default function App() {
   }, []);
 
   const handleLoginSuccess = (token: string, username: string) => {
-    localStorage.setItem('utel_supervisor_token', token);
-    localStorage.setItem('utel_supervisor_user', username);
+    localStorage.setItem('demo_supervisor_token', token);
+    localStorage.setItem('demo_supervisor_user', username);
     setSessionUser(username);
     setIsAuthenticated(true);
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('utel_supervisor_token');
-    localStorage.removeItem('utel_supervisor_user');
+    localStorage.removeItem('demo_supervisor_token');
+    localStorage.removeItem('demo_supervisor_user');
     setIsAuthenticated(false);
     setSessionUser('');
     setCalls([]);
   };
 
-  const [driveRecordings, setDriveRecordings] = useState<any[]>([]);
-
-  // Sincronizar con Google Drive
-  const syncWithDrive = async () => {
-    const driveToken = localStorage.getItem('utel_google_drive_token');
-    if (!driveToken) {
-      setDriveStatus('disconnected');
-      return;
-    }
-
-    setIsSyncingDrive(true);
-    try {
-      // 1. Sincronizar historial de auditorías (JSONs)
-      const response = await fetch(`/api/drive-history?accessToken=${driveToken}`);
-      if (!response.ok) throw new Error('Fallo al sincronizar historial de Drive');
-      
-      const data = await response.json();
-      if (data.calls && Array.isArray(data.calls)) {
-        setCalls(prev => {
-          const combined = [...prev];
-          const existingIds = new Set(prev.map(c => c.id));
-          
-          data.calls.forEach((driveCall: SalesCall) => {
-            if (!existingIds.has(driveCall.id)) {
-              combined.push({
-                ...driveCall,
-                isFromDrive: true
-              });
-            }
-          });
-          
-          return combined.sort((a, b) => 
-            new Date(b.metadata.uploadedAt).getTime() - new Date(a.metadata.uploadedAt).getTime()
-          );
-        });
-      }
-
-      // 2. Sincronizar lista de grabaciones disponibles (Audios nuevos)
-      const q = encodeURIComponent("mimeType contains 'audio/' and trashed = false");
-      const recordingsUrl = `https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name,size,modifiedTime)&pageSize=15&orderBy=modifiedTime desc&supportsAllDrives=true&includeItemsFromAllDrives=true`;
-      const recResp = await fetch(recordingsUrl, {
-        headers: { 'Authorization': `Bearer ${driveToken}` }
-      });
-      
-      if (recResp.ok) {
-        const recData = await recResp.json();
-        setDriveRecordings(recData.files || []);
-      }
-
-      setDriveStatus('connected');
-    } catch (err) {
-      console.error("Error syncing with Drive:", err);
-      setDriveStatus('error');
-    } finally {
-      setIsSyncingDrive(false);
-    }
-  };
+  // Versión portfolio: sin sincronización con Google Drive (desactivada para no exponer credenciales reales).
+  // Las auditorías viven en el servidor de demostración y en el caché local del navegador.
 
   // Cargar llamadas reales de forma dinamica al montar el componente y fusionar con el cache local del dispositivo
   useEffect(() => {
@@ -187,7 +122,7 @@ export default function App() {
     // 1. Cargar cache local
     let cachedCalls: SalesCall[] = [];
     try {
-      const localData = localStorage.getItem('utel_audited_calls_v1');
+      const localData = localStorage.getItem('demo_audited_calls_v1');
       if (localData) {
         cachedCalls = JSON.parse(localData);
       }
@@ -215,7 +150,7 @@ export default function App() {
           setCalls(merged);
           
           if (merged.length > 0) {
-            const lastActiveId = localStorage.getItem('utel_last_selected_call_id');
+            const lastActiveId = localStorage.getItem('demo_last_selected_call_id');
             if (lastActiveId && merged.some(c => c.id === lastActiveId)) {
               setSelectedCallId(lastActiveId);
             } else {
@@ -236,8 +171,6 @@ export default function App() {
       })
       .finally(() => {
         setIsLoading(false);
-        // 3. Sincronizar con Drive en segundo plano
-        syncWithDrive();
       });
   }, [isAuthenticated]);
 
@@ -245,7 +178,7 @@ export default function App() {
   useEffect(() => {
     if (!isLoading) {
       try {
-        localStorage.setItem('utel_audited_calls_v1', JSON.stringify(calls));
+        localStorage.setItem('demo_audited_calls_v1', JSON.stringify(calls));
       } catch (e) {
         console.error("Error al guardar cache local:", e);
       }
@@ -255,42 +188,11 @@ export default function App() {
   // Guardar la última llamada seleccionada
   useEffect(() => {
     if (selectedCallId) {
-      localStorage.setItem('utel_last_selected_call_id', selectedCallId);
+      localStorage.setItem('demo_last_selected_call_id', selectedCallId);
     }
   }, [selectedCallId]);
 
-  const [isImportingFromDrive, setIsImportingFromDrive] = useState<string | null>(null);
-
-  const handleImportFromDrive = async (fileId: string, fileName: string) => {
-    const driveToken = localStorage.getItem('utel_google_drive_token');
-    if (!driveToken) return;
-
-    setIsImportingFromDrive(fileId);
-    try {
-      const response = await fetch('/api/drive-import', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fileId,
-          fileName,
-          accessToken: driveToken,
-          engine: 'gemini' // Por defecto en el import rápido
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Fallo al importar la grabación seleccionada.');
-      }
-
-      const completedCall = await response.json();
-      handleUploadSuccess(completedCall);
-    } catch (err) {
-      console.error("Error importing from drive list:", err);
-      alert('Error al procesar la grabación de Drive. Por favor, intenta usar el cargador avanzado.');
-    } finally {
-      setIsImportingFromDrive(null);
-    }
-  };
+  // Versión portfolio: importación desde Drive desactivada (ver aviso en la interfaz).
 
   const activeCall = calls.find(c => c.id === selectedCallId) || calls[0];
 
@@ -300,24 +202,7 @@ export default function App() {
       return [newCall, ...filtered];
     });
     setSelectedCallId(newCall.id);
-
-    // Intentar guardar en Drive automáticamente si hay token
-    const driveToken = localStorage.getItem('utel_google_drive_token');
-    if (driveToken) {
-      try {
-        await fetch('/api/drive-save', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            callData: newCall, 
-            accessToken: driveToken 
-          })
-        });
-        console.log("Auditoría sincronizada exitosamente con Google Drive.");
-      } catch (err) {
-        console.error("Error al guardar respaldo en Drive:", err);
-      }
-    }
+    // Versión portfolio: sin respaldo en Drive (desactivado). La llamada queda en el servidor demo y el caché local.
   };
 
   const handleLoadDemo = async () => {
@@ -551,8 +436,8 @@ export default function App() {
                         <button
                           onClick={async () => {
                             if (window.confirm('¿Estás seguro de que deseas vaciar el caché local de este dispositivo?')) {
-                              localStorage.removeItem('utel_audited_calls_v1');
-                              localStorage.removeItem('utel_last_selected_call_id');
+                              localStorage.removeItem('demo_audited_calls_v1');
+                              localStorage.removeItem('demo_last_selected_call_id');
                               try {
                                 await clearAllAudiosFromDB();
                               } catch (dbErr) {
@@ -692,7 +577,7 @@ export default function App() {
                     className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold tracking-wide transition-all shadow-md cursor-pointer flex items-center gap-2"
                   >
                     <Plus className="w-4 h-4" />
-                    Nueva Audición / Drive
+                    Nueva Audición
                   </button>
                   <button
                     onClick={handleLoadDemo}
@@ -707,78 +592,21 @@ export default function App() {
               {/* Right Side: Historial Siempre Visible en el Empty State */}
               <div className="lg:col-span-5 flex flex-col gap-4">
                 <div className="bg-[#121212] rounded-2xl border border-[#222222] p-6 shadow-lg h-full overflow-hidden flex flex-col">
-                  {/* Nueva sección: Grabaciones de audio directas de Drive */}
-                  {driveRecordings.length > 0 ? (
-                    <div className="mb-8 animate-fadeIn">
-                      <div className="flex items-center justify-between mb-3 border-b border-[#222222] pb-2">
-                        <div className="flex items-center gap-2">
-                          <div className="p-2 bg-amber-600/10 rounded-lg text-amber-500">
-                            <Folder className="w-4 h-4" />
-                          </div>
-                          <h3 className="text-[11px] font-bold text-white uppercase tracking-wider">Grabaciones en Drive</h3>
-                        </div>
-                        <span className="text-[10px] text-gray-500 font-mono italic">Nuevas para auditar</span>
-                      </div>
-                      
-                      <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
-                        {driveRecordings.map((rec) => (
-                          <div 
-                            key={rec.id}
-                            className="p-2.5 bg-[#161616] border border-zinc-800 rounded-xl flex items-center justify-between group"
-                          >
-                            <div className="flex items-center gap-2 overflow-hidden">
-                              <FileAudio className="w-4 h-4 text-indigo-400 shrink-0" />
-                              <div className="overflow-hidden">
-                                <p className="text-[11px] font-medium text-gray-300 truncate">{rec.name}</p>
-                                <p className="text-[9px] text-gray-500">{new Date(rec.modifiedTime).toLocaleDateString()}</p>
-                              </div>
-                            </div>
-                            <button
-                              onClick={() => handleImportFromDrive(rec.id, rec.name)}
-                              disabled={!!isImportingFromDrive}
-                              className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-500 disabled:bg-zinc-800 text-white text-[9px] font-bold rounded-lg transition-all active:scale-[0.95]"
-                            >
-                              {isImportingFromDrive === rec.id ? (
-                                <RefreshCw className="w-3 h-3 animate-spin" />
-                              ) : (
-                                'AUDITAR'
-                              )}
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ) : driveStatus === 'connected' ? (
-                    <div className="mb-8 p-4 bg-[#151515] border border-dashed border-zinc-800 rounded-xl text-center">
-                      <Folder className="w-5 h-5 text-amber-500 mx-auto mb-2 opacity-70" />
-                      <p className="text-[11px] font-bold text-gray-200">¿No aparecen tus grabaciones recientes?</p>
-                      <p className="text-[10px] text-gray-500 mt-1 leading-relaxed">
-                        En cuentas institucionales, tus archivos suelen estar dentro de subcarpetas o en <strong>Unidades Compartidas</strong> de tu organización.
-                      </p>
-                      <p className="text-[10.5px] text-indigo-400 font-semibold mt-2.5">
-                        Usa el cargador de audio y haz clic en "Importar de Drive" para explorar carpetas y Unidades Compartidas.
-                      </p>
-                    </div>
-                  ) : null}
+                  {/* Versión portfolio: Drive desactivado */}
+                  <div className="mb-2 p-4 bg-amber-500/5 border border-amber-500/20 rounded-xl">
+                    <p className="text-[11px] text-amber-200/90 leading-relaxed">
+                      <strong>Sincronización con Drive desactivada.</strong> En esta versión portfolio no se conectan cuentas reales de Google. Las auditorías se guardan en el servidor de demostración y en el caché local de tu navegador.
+                    </p>
+                  </div>
 
                   <div className="flex items-center justify-between mb-6 border-b border-[#222222] pb-4">
                     <div className="flex items-center gap-2">
                       <div className="p-2 bg-amber-500/10 rounded-lg text-amber-500">
                         <Activity className="w-4 h-4" />
                       </div>
-                      <h3 className="text-sm font-bold text-white uppercase tracking-wider">Historial en Drive</h3>
+                      <h3 className="text-sm font-bold text-white uppercase tracking-wider">Historial de auditorías</h3>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <button 
-                        onClick={syncWithDrive}
-                        disabled={isSyncingDrive}
-                        className="p-1.5 hover:bg-white/5 rounded-lg text-gray-500 hover:text-indigo-400 transition-all active:rotate-180 duration-500"
-                        title="Sincronizar con Drive"
-                      >
-                        <RefreshCw className={`w-3.5 h-3.5 ${isSyncingDrive ? 'animate-spin text-indigo-400' : ''}`} />
-                      </button>
-                      <span className="text-[10px] bg-zinc-800 text-gray-400 px-2 py-0.5 rounded-full font-mono">{calls.length} Items</span>
-                    </div>
+                    <span className="text-[10px] bg-zinc-800 text-gray-400 px-2 py-0.5 rounded-full font-mono">{calls.length} Items</span>
                   </div>
 
                   {calls.length === 0 ? (
@@ -832,7 +660,7 @@ export default function App() {
                     <div className="p-3 bg-indigo-500/5 rounded-xl border border-indigo-500/10 flex items-start gap-3">
                       <HelpCircle className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
                       <p className="text-[10px] text-gray-400 leading-relaxed">
-                        Estas auditorías están seguras en tu cuenta de <strong className="text-indigo-400">Google Drive</strong>. Puedes recuperarlas desde cualquier dispositivo.
+                        Versión portfolio: los datos son <strong className="text-indigo-400">100% simulados</strong> y se guardan solo en este navegador y el servidor demo.
                       </p>
                     </div>
                   </div>

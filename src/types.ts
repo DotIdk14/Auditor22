@@ -13,11 +13,11 @@ export interface CallMetadata {
 
 export interface CallScore {
   global: number; // 0 to 100 scaled or total points * 10
-  greeting: number; // For backward compatibility or mapped from UTEL C1-C2
-  needDiscovery: number; // Mapped from UTEL C3
-  objectionHandling: number; // Mapped from UTEL C4-C5
-  closingSkills: number; // Mapped from UTEL C6-C8
-  empathy: number; // Mapped from UTEL C9-C10
+  greeting: number; // For backward compatibility or mapped from PCE C1-C2
+  needDiscovery: number; // Mapped from PCE C3
+  objectionHandling: number; // Mapped from PCE C4-C5
+  closingSkills: number; // Mapped from PCE C6-C8
+  empathy: number; // Mapped from PCE C9-C10
 }
 
 export interface UtelSubItem {
@@ -54,7 +54,7 @@ export interface CallAnalysis {
   nextSteps: string[];
   customerMood: 'receptivo' | 'molesto' | 'neutral' | 'interesado' | 'indiferente';
   salesOutcome: 'venta_cerrada' | 'interesado_seguimiento' | 'no_interesado' | 'agenda_demostracion';
-  utel?: UtelEvaluation; // Extended UTEL evaluation
+  utel?: UtelEvaluation; // Extended PCE evaluation
   emotionalAnalysis?: {
     primaryEmotion: string;
     emotionalJourney: string;

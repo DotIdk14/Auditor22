@@ -208,7 +208,7 @@ export const downloadPDFReport = (call: SalesCall) => {
 
   y += 28;
 
-  // 5. DETALLADO CHECKLIST DE LA RÚBRICA UTEL PCE
+  // 5. DETALLADO CHECKLIST DE LA RÚBRICA PCE (demo)
   checkOverflow(20);
   doc.setFont('Helvetica', 'bold');
   doc.setFontSize(10.5);

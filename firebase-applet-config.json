@@ -1,9 +1,9 @@
 {
-  "projectId": "resonant-watch-x5xj8",
-  "appId": "1:908571194791:web:db7da42a71a37d455cf282",
-  "apiKey": "AIzaSyCIu_I7eVpf5lxPIXao_Wm8Fw8V7AulQDw",
-  "authDomain": "resonant-watch-x5xj8.firebaseapp.com",
-  "storageBucket": "resonant-watch-x5xj8.firebasestorage.app",
-  "messagingSenderId": "908571194791",
+  "projectId": "portfolio-demo-redacted",
+  "appId": "portfolio-demo-redacted",
+  "apiKey": "PORTFOLIO-DEMO-REDACTED",
+  "authDomain": "portfolio-demo-redacted.firebaseapp.com",
+  "storageBucket": "portfolio-demo-redacted.firebasestorage.app",
+  "messagingSenderId": "000000000000",
   "measurementId": ""
 }

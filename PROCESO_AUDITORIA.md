@@ -1,6 +1,6 @@
-# Proceso de Auditoría Completa de Llamadas - UTEL PCE
+# Proceso de Auditoría Completa de Llamadas - Universidad Demo PCE
 
-Este documento detalla la arquitectura, el flujo cognitivo y el modelo de evaluación matemática y emocional utilizado en la plataforma para realizar la **Auditoría PCE (Pauta de Calidad Educativa) de UTEL Universidad**.
+Este documento detalla la arquitectura, el flujo cognitivo y el modelo de evaluación matemática y emocional utilizado en la plataforma para realizar la **Auditoría PCE (Pauta de Calidad Educativa) de Universidad Demo**.
 
 ---
 
@@ -15,18 +15,18 @@ El ciclo de vida de una auditoría, desde la obtención del archivo de audio has
 
 1. **Ingestión Multicanal**:
    * **Carga Directa**: Carga manual de archivos de audio locales en formatos estándar (`.mp3`, `.wav`, `.m4a`, `.webm`).
-   * **Integración con Google Drive**: Soporta de forma nativa cuentas institucionales y personales, permitiendo explorar carpetas, listado recurrente y **Unidades Compartidas** organizacionales de forma recursiva.
+   * **Integración con Google Drive (desactivada en versión portfolio)**: en la versión portfolio no se conecta ninguna cuenta real; la carga es local y las llamadas de prueba son simuladas.
 2. **Procesamiento de Audio**:
    * Si la clave de **AssemblyAI** está disponible, se utiliza para una diarización de alta precisión (separación de oradores).
    * Si no, se utiliza el motor multimodal directo de **Google Gemini 3.5 Flash** enviando el buffer del audio codificado en Base64.
 3. **Análisis Cognitivo y Evaluación de Rúbrica**:
-   * El servicio de IA analiza la llamada utilizando un prompt de grado de producción estructurado para actuar como un **Auditor Senior de Calidad de UTEL Universidad** y un experto en **Neuroventas**.
+   * El servicio de IA analiza la llamada utilizando un prompt de grado de producción estructurado para actuar como un **Auditor Senior de Calidad de Universidad Demo** y un experto en **Neuroventas**.
 4. **Cálculo de Puntajes e Indexación**:
-   * Se aplican pesos numéricos exactos de acuerdo con la matriz de evaluación de UTEL. Los resultados se guardan localmente en **IndexedDB** para garantizar la persistencia sin conexión, y se respaldan automáticamente como archivos `.json` en la carpeta `Auditorías PCE UTEL` del Google Drive conectado.
+   * Se aplican pesos numéricos exactos de acuerdo con la matriz de evaluación demo. Los resultados se guardan localmente en **IndexedDB** para garantizar la persistencia sin conexión. En la versión portfolio no hay respaldo en Google Drive (desactivado para no exponer credenciales reales).
 
 ---
 
-## 2. Rúbrica de Auditoría PCE UTEL (22 Parámetros)
+## 2. Rúbrica de Auditoría PCE Universidad Demo (22 Parámetros)
 
 El núcleo matemático evalúa **22 subítems oficiales**, agrupados en 5 categorías fundamentales con pesos ponderados de la siguiente manera:
 
@@ -39,7 +39,7 @@ Evalúa la empatía inicial y la recopilación de datos clave del prospecto para
 * **c1_equiv (0.20 pts)**: Indagación de equivalencias, revalidaciones de materias o estudios previos truncos.
 
 ### C2. GENERALIDADES (Ponderación: 1.00 Punto)
-Mide la capacidad del asesor para posicionar la marca institucional y el valor estratégico de UTEL.
+Mide la capacidad del asesor para posicionar la marca institucional y el valor estratégico de Universidad Demo.
 * **c2_num (0.34 pts)**: Exposición de la numeralia de prestigio institucional (más de 12 años de trayectoria, presencia internacional en más de 3 países, miles de egresados).
 * **c2_mod (0.33 pts)**: Explicación didáctica y persuasiva del modelo educativo flexible de aprendizaje.
 * **c2_esp (0.33 pts)**: Vinculación del formato formativo con las necesidades del cliente (cómo se adapta a su agenda diaria).
@@ -63,7 +63,7 @@ Determina la asertividad final para concretar la venta o establecer la agenda de
 La categoría con mayor relevancia cuantitativa, centrada en el protocolo operativo institucional del CRM.
 * **c5_int (1.20 pts)**: Garantía de interactuar de forma directa e inequívoca con el tomador de decisiones o interesado directo en estudiar.
 * **c5_tip (1.20 pts)**: Direccionamiento hacia una tipificación positiva para acelerar el embudo comercial (CRM setup).
-* **c5_pla (1.20 pts)**: Alineación operativa a los valores, protocolos de etiqueta e identidad de las plataformas oficiales UTEL.
+* **c5_pla (1.20 pts)**: Alineación operativa a los valores, protocolos de etiqueta e identidad de las plataformas oficiales Universidad Demo.
 * **c5_reg (1.20 pts)**: Evidencia del registro, anotaciones o actualización de datos en tiempo real de la llamada.
 * **c5_seg (1.20 pts)**: Calendarización de pasos subsecuentes claros y confirmación de la fecha/hora del próximo contacto acordado.
 
@@ -93,4 +93,4 @@ Para mitigar los errores clásicos de los LLM multimediales al procesar audios c
 
 ---
 
-Este proceso garantiza auditorías precisas, inmediatas y transparentes, alineando los estándares educativos rigurosos de UTEL con inteligencia de vanguardia.
+Este proceso garantiza auditorías precisas, inmediatas y transparentes, alineando los estándares educativos rigurosos de Universidad Demo con inteligencia de vanguardia.
