@@ -19,6 +19,10 @@ Sin necesidad de subir audio: en **Cargar / Gestionar → Llamada de Prueba** (o
 
 ## Desarrollo local
 
+Opción fácil (Windows): doble clic en **`iniciar-local.bat`**. Busca un puerto libre (3002–3005), levanta el servidor y abre el navegador. Acceso demo: usuario `demo` / contraseña `demo1234`.
+
+Opción manual:
+
 ```bash
 npm install
 cp .env.example .env   # la contraseña demo ya viene configurada
@@ -26,3 +30,10 @@ npm run dev            # servidor en http://localhost:3000 (o PORT=3002 npm run 
 ```
 
 Variables en `.env.example`: solo placeholders y la contraseña demo. Sin keys reales.
+
+## Deploy en Vercel
+
+- Build configurado en `vercel.json`: `vite build` (solo frontend; el bundle ofuscado de `npm run build` es para hosting propio con `npm start`).
+- La API serverless (`api/index.ts`) es liviana e independiente: login demo, llamadas de prueba, subida y listado funcionan sin claves ni Google.
+- Contraseña demo en Vercel: variable `SUPERVISOR_PASSWORD` (por defecto `demo1234`).
+- Límite de la plataforma: la subida de audio en Hobby admite ~4.5 MB; para archivos grandes usa las llamadas de prueba o el servidor local.
