@@ -21,12 +21,21 @@ const audioBuffers = new Map<string, Buffer>();
 
 // Versión portfolio: pre-cargar 3 llamadas demo variadas (línea/ejecutiva/híbrida)
 // para que el panel siempre muestre contenido para capturas y exploración inmediata.
-[
-  ["call_seed_linea", "Llamada_Demo_Licenciatura_Administracion.mp3", 4829310],
-  ["call_seed_ejecutiva", "Llamada_Demo_MBA_Ejecutiva.mp3", 5124400],
-  ["call_seed_hibrida", "Llamada_Demo_Ingenieria_Hibrida.mp3", 4980200]
-].forEach(([id, fileName, size]) => {
-  localCallsMemory.push(generateHighFidelitySimulatedCall(fileName as string, size as number, id as string));
+try {
+  [
+    ["call_seed_linea", "Llamada_Demo_Licenciatura_Administracion.mp3", 4829310],
+    ["call_seed_ejecutiva", "Llamada_Demo_MBA_Ejecutiva.mp3", 5124400],
+    ["call_seed_hibrida", "Llamada_Demo_Ingenieria_Hibrida.mp3", 4980200]
+  ].forEach(([id, fileName, size]) => {
+    localCallsMemory.push(generateHighFidelitySimulatedCall(fileName as string, size as number, id as string));
+  });
+} catch (seedErr) {
+  console.error("[API_SEED_ERROR]", seedErr);
+}
+
+// Diagnóstico remoto: responde sin tocar ninguna dependencia pesada.
+app.get("/api/health", (req, res) => {
+  return res.json({ ok: true, seeds: localCallsMemory.length, version: "portfolio-v3" });
 });
 
 const DEMO_TOKEN = "demo-supervisor-session-token";
@@ -162,6 +171,14 @@ app.get("/api/drive-history", (req, res) => {
     calls: [],
     error: "El historial de Google Drive está desactivado en la versión portfolio."
   });
+});
+
+// Middleware final: convierte cualquier error en JSON visible (diagnóstico remoto en Vercel).
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+app.use((err: any, req: any, res: any, next: any) => {
+  console.error("[API_ERROR]", err);
+  if (res.headersSent) return;
+  return res.status(500).json({ error: err?.message || "Error interno del servidor" });
 });
 
 export default app;
