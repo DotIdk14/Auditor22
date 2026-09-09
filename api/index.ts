@@ -5,7 +5,7 @@
 // Comparte el generador de demos con el servidor local vía ../lib/demo-calls.
 import express from "express";
 import multer from "multer";
-import { generateHighFidelitySimulatedCall } from "../lib/demo-calls";
+import { generateHighFidelitySimulatedCall } from "../lib/demo-calls.js";
 
 const app = express();
 app.use(express.json({ limit: "10mb" }));
